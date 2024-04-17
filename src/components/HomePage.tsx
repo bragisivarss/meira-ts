@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Expense from "@/types/ExpenseType";
 import MapExpense from "@/components/RenderExpense";
+import CreateExpense from "@/components/CreateExpense";
 
 const getExpenseData = async (): Promise<Expense[]> => {
     const res = await fetch("http://localhost:3001/api/expenses");
@@ -23,24 +24,35 @@ const ExpenseComponent = () => {
     };
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [data]);
 
     if (!data) {
         return <p>Please Wait Loading..</p>;
     }
 
-    const removeOne = (id: number) => {
-        const newData = data.filter((data) => data.id != id);
-        setData(newData);
+    const removeOne = async (id: number) => {
+        try {
+            const response = await fetch(
+                `http://localhost:3001/api/expense/${id}`,
+                {
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8",
+                    },
+                    method: "DELETE",
+                }
+            );
+            console.log(response);
+            return response;
+        } catch (err) {
+            console.log(err);
+        }
     };
 
-    const removeAll = () => {
-        setData(null)
-    }
-
-    return <>
-    <MapExpense data={data} removeOne={removeOne} />
-        <button type="button" onClick={removeAll} className="m-10 border border-cyan-600 px-2 py-1">Delete All!</button>
-    </>
+    return (
+        <>
+            <MapExpense data={data} removeOne={removeOne} />
+            <CreateExpense />
+        </>
+    );
 };
 export default ExpenseComponent;
